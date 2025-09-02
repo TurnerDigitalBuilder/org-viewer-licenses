@@ -756,5 +756,8 @@ const GraphAPI = (function() {
       document.getElementById('statsSection').style.display = 'block';
       document.getElementById('statsContent').innerHTML = statsHtml;
     }
-  };
+  }; 
 })();
+
+// Expose GraphAPI to global scope for inline event handlers
+window.GraphAPI = GraphAPI;
