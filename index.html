@@ -78,6 +78,7 @@
               <div class="form-group">
                 <label for="maxDepth">Hierarchy Depth:</label>
                 <select id="maxDepth">
+                  <option value="2">1-2 Levels (Direct reports)</option>
                   <option value="3">2-3 Levels (Direct reports + their teams)</option>
                   <option value="4" selected>3-5 Levels (Team structure)</option>
                   <option value="999">Unlimited (Full hierarchy)</option>
@@ -199,6 +200,14 @@
         
         <!-- Bottom Controls -->
         <div class="bottom-controls" id="bottomControls" style="display: none;">
+          <input type="text" id="searchInput" placeholder="Search name or title" 
+                 onkeydown="if(event.key==='Enter') OrgChart.searchByNameTitle()" style="max-width: 180px;">
+          <button class="icon-btn" onclick="OrgChart.searchByNameTitle()" title="Search">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+          </button>
           <button class="icon-btn" onclick="OrgChart.expandAll()" title="Expand All">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <circle cx="12" cy="12" r="10"></circle>
