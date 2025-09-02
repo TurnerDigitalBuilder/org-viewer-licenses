@@ -656,3 +656,6 @@ const OrgChart = (function() {
     }
   };
 })();
+
+// Expose OrgChart to global scope for inline event handlers
+window.OrgChart = OrgChart;
