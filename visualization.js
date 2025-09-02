@@ -12,6 +12,7 @@ const OrgChart = (function() {
   let orgData = [];
   let licensedEmails = new Set();
   let highlightedDepartment = null;
+  let highlightedNodes = null;
   
   // Configuration
   const config = {
@@ -392,6 +393,13 @@ const OrgChart = (function() {
         this.clearHighlight();
       } else {
         highlightedDepartment = department;
+        highlightedNodes = new Set(orgData
+          .filter(u => u.department === department)
+          .map(u => u.email));
+        highlightedNodes = highlightedNodes.size > 0 ? highlightedNodes : null;
+        const input = document.getElementById('searchInput');
+        if (input) input.value = '';
+
         // Update active class on rows
         document.querySelectorAll('.dept-row').forEach(row => {
           if (row.dataset.department === department) {
@@ -400,57 +408,95 @@ const OrgChart = (function() {
             row.classList.remove('active');
           }
         });
-        
+
         // Show clear highlight button
         const clearBtn = document.getElementById('clearHighlightBtn');
         if (clearBtn) {
           clearBtn.style.display = 'flex';
         }
       }
-      
+
       // Update the visualization
       if (root) {
         this.update(root);
       }
     },
-    
-    // Clear department highlight
+
+    // Search by name or title
+    searchByNameTitle: function() {
+      const input = document.getElementById('searchInput');
+      if (!input) return;
+      const term = input.value.trim().toLowerCase();
+      if (!term) {
+        this.clearHighlight();
+        return;
+      }
+
+      highlightedDepartment = null;
+      highlightedNodes = new Set(orgData.filter(u => {
+        const name = u.name || '';
+        const title = u.title || '';
+        return name.toLowerCase().includes(term) || title.toLowerCase().includes(term);
+      }).map(u => u.email));
+
+      highlightedNodes = highlightedNodes.size > 0 ? highlightedNodes : null;
+
+      // Remove active class from department rows
+      document.querySelectorAll('.dept-row').forEach(row => row.classList.remove('active'));
+
+      // Show clear highlight button if we found matches
+      const clearBtn = document.getElementById('clearHighlightBtn');
+      if (clearBtn) {
+        clearBtn.style.display = highlightedNodes.size > 0 ? 'flex' : 'none';
+      }
+
+      if (root) {
+        this.update(root);
+      }
+    },
+
+    // Clear highlight (department or search)
     clearHighlight: function() {
       highlightedDepartment = null;
-      
+      highlightedNodes = null;
+
       // Remove active class from all rows
       document.querySelectorAll('.dept-row').forEach(row => {
         row.classList.remove('active');
       });
-      
+
+      // Clear search input
+      const input = document.getElementById('searchInput');
+      if (input) input.value = '';
+
       // Hide clear highlight button
       const clearBtn = document.getElementById('clearHighlightBtn');
       if (clearBtn) {
         clearBtn.style.display = 'none';
       }
-      
+
       // Update the visualization
       if (root) {
         this.update(root);
       }
     },
-    
+
     // Get node opacity based on highlight
     getNodeOpacity: function(d) {
-      if (!highlightedDepartment) {
+      if (!highlightedNodes) {
         return 1;
       }
-      return d.data.department === highlightedDepartment ? 1 : 0.2;
+      return highlightedNodes.has(d.data.email) ? 1 : 0.2;
     },
-    
+
     // Get link opacity based on highlight
     getLinkOpacity: function(d) {
-      if (!highlightedDepartment) {
+      if (!highlightedNodes) {
         return 1;
       }
-      // Show link if either source or target is in highlighted department
-      return (d.source.data.department === highlightedDepartment || 
-              d.target.data.department === highlightedDepartment) ? 0.6 : 0.1;
+      // Show link if either source or target is in highlighted set
+      return (highlightedNodes.has(d.source.data.email) ||
+              highlightedNodes.has(d.target.data.email)) ? 0.6 : 0.1;
     },
     
     // Get node color based on current color scheme

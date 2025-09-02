@@ -373,8 +373,9 @@ const GraphAPI = (function() {
         document.getElementById('step4Number').classList.add('step-complete');
         
         // Show success message
-        const depthLabel = maxDepth === 3 ? '2-3 levels' : 
-                          maxDepth === 4 ? '3-5 levels' : 
+        const depthLabel = maxDepth === 2 ? '1-2 levels' :
+                          maxDepth === 3 ? '2-3 levels' :
+                          maxDepth === 4 ? '3-5 levels' :
                           'unlimited depth';
         let filterInfo = '';
         if ((filterNoDepartment || filterInterns) && filteredOrgData.length < orgData.length) {

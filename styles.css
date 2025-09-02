@@ -623,6 +623,16 @@ input[type="checkbox"] {
   gap: 0.5rem;
 }
 
+.bottom-controls input {
+  width: auto;
+  padding: 0.25rem 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg);
+  color: var(--text);
+  height: 40px;
+}
+
 .icon-btn {
   width: 40px;
   height: 40px;
