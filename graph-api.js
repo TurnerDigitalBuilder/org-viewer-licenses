@@ -424,20 +424,23 @@ const GraphAPI = (function() {
             }
           }
         );
-        
+
         if (!response.ok) {
           if (response.status === 401) {
             throw new Error('Invalid or expired access token');
           }
+          if (response.status === 404) {
+            return null;
+          }
           throw new Error(`Failed to fetch user: ${response.status}`);
         }
-        
+
         const userData = await response.json();
         return this.processUserData(userData);
-        
+
       } catch (error) {
         console.error(`Error fetching user ${email}:`, error);
-        return null;
+        throw error;
       }
     },
     
@@ -535,15 +538,19 @@ const GraphAPI = (function() {
               }
             }
           );
-          
+
+          if (response.status === 401) {
+            throw new Error('Invalid or expired access token');
+          }
+
           if (response.ok) {
             const data = await response.json();
             const reports = data.value || [];
-            
+
             // Process each direct report
             for (const reportData of reports) {
               if (orgData.length >= maxUsers) break;
-              
+
               const report = this.processUserData(reportData);
               if (report) {
                 const childNode = await this.buildHierarchy(report, visitedIds, depth + 1, maxDepth);
@@ -552,9 +559,12 @@ const GraphAPI = (function() {
                 }
               }
             }
+          } else {
+            console.error(`Failed to fetch direct reports for ${user.name}: ${response.status}`);
           }
         } catch (error) {
           console.error(`Error fetching direct reports for ${user.name}:`, error);
+          throw error;
         }
       }
       
