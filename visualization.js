@@ -486,12 +486,12 @@ const OrgChart = (function() {
       let engagementText = '';
       if (d.data.aiEngagement !== undefined) {
         const rating = GraphAPI.getStarRating(d.data.aiEngagement);
-        const dailyMessages = Math.round(d.data.aiEngagement * 3);
+        const dailyEngagements = Math.round(d.data.aiEngagement * 3);
         engagementText = `
           <div style="margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px solid #ddd;">
             <strong>AI Engagement:</strong> ${rating.stars}<br>
             <span style="color: var(--text-light); font-size: 0.85rem;">
-              ${rating.label} (~${dailyMessages} messages/day)
+              ${rating.label} (~${dailyEngagements} engagements/day)
             </span>
           </div>
         `;
