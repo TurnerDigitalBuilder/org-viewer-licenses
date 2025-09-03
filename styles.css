@@ -673,6 +673,18 @@ input[type="checkbox"] {
   border-color: var(--danger);
 }
 
+#clearSearchBtn {
+  background: rgba(231, 76, 60, 0.1);
+  border-color: var(--danger);
+  color: var(--danger);
+}
+
+#clearSearchBtn:hover {
+  background: var(--danger);
+  color: white;
+  border-color: var(--danger);
+}
+
 /* D3 Styles */
 .node {
   cursor: pointer;

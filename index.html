@@ -200,13 +200,16 @@
         
         <!-- Bottom Controls -->
         <div class="bottom-controls" id="bottomControls" style="display: none;">
-          <input type="text" id="searchInput" placeholder="Search name or title" 
+          <input type="text" id="searchInput" placeholder="Search name or title"
                  onkeydown="if(event.key==='Enter') OrgChart.searchByNameTitle()" style="max-width: 180px;">
           <button class="icon-btn" onclick="OrgChart.searchByNameTitle()" title="Search">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <circle cx="11" cy="11" r="8"></circle>
               <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
             </svg>
+          </button>
+          <button class="icon-btn" onclick="OrgChart.clearHighlight()" title="Clear Search" id="clearSearchBtn" style="display: none;">
+            ✕
           </button>
           <button class="icon-btn" onclick="OrgChart.expandAll()" title="Expand All">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">

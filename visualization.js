@@ -408,6 +408,8 @@ const OrgChart = (function() {
         highlightedNodes = highlightedNodes.size > 0 ? highlightedNodes : null;
         const input = document.getElementById('searchInput');
         if (input) input.value = '';
+        const searchClearBtn = document.getElementById('clearSearchBtn');
+        if (searchClearBtn) searchClearBtn.style.display = 'none';
 
         // Update active class on rows
         document.querySelectorAll('.dept-row').forEach(row => {
@@ -453,10 +455,14 @@ const OrgChart = (function() {
       // Remove active class from department rows
       document.querySelectorAll('.dept-row').forEach(row => row.classList.remove('active'));
 
-      // Show clear highlight button if we found matches
-      const clearBtn = document.getElementById('clearHighlightBtn');
-      if (clearBtn) {
-        clearBtn.style.display = highlightedNodes.size > 0 ? 'flex' : 'none';
+      // Show clear search button if we found matches
+      const clearHighlightBtn = document.getElementById('clearHighlightBtn');
+      if (clearHighlightBtn) {
+        clearHighlightBtn.style.display = 'none';
+      }
+      const clearSearchBtn = document.getElementById('clearSearchBtn');
+      if (clearSearchBtn) {
+        clearSearchBtn.style.display = highlightedNodes && highlightedNodes.size > 0 ? 'flex' : 'none';
       }
 
       if (root) {
@@ -478,10 +484,14 @@ const OrgChart = (function() {
       const input = document.getElementById('searchInput');
       if (input) input.value = '';
 
-      // Hide clear highlight button
-      const clearBtn = document.getElementById('clearHighlightBtn');
-      if (clearBtn) {
-        clearBtn.style.display = 'none';
+      // Hide clear buttons
+      const clearHighlightBtn = document.getElementById('clearHighlightBtn');
+      if (clearHighlightBtn) {
+        clearHighlightBtn.style.display = 'none';
+      }
+      const clearSearchBtn = document.getElementById('clearSearchBtn');
+      if (clearSearchBtn) {
+        clearSearchBtn.style.display = 'none';
       }
 
       // Update the visualization
