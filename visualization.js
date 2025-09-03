@@ -437,17 +437,23 @@ const OrgChart = (function() {
     searchByNameTitle: function() {
       const input = document.getElementById('searchInput');
       if (!input) return;
-      const term = input.value.trim().toLowerCase();
-      if (!term) {
+      const raw = input.value.trim().toLowerCase();
+      if (!raw) {
         this.clearHighlight();
         return;
       }
 
+      // Split on quoted phrases or individual words
+      const terms = raw.match(/"[^"]+"|\S+/g) || [];
+
       highlightedDepartment = null;
       highlightedNodes = new Set(orgData.filter(u => {
-        const name = u.name || '';
-        const title = u.title || '';
-        return name.toLowerCase().includes(term) || title.toLowerCase().includes(term);
+        const name = (u.name || '').toLowerCase();
+        const title = (u.title || '').toLowerCase();
+        return terms.some(t => {
+          const token = t.replace(/^"|"$/g, '');
+          return name.includes(token) || title.includes(token);
+        });
       }).map(u => u.email));
 
       highlightedNodes = highlightedNodes.size > 0 ? highlightedNodes : null;
