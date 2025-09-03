@@ -56,9 +56,18 @@ const OrgChart = (function() {
         return;
       }
       
+      // Reset any existing search or department highlights
+      highlightedDepartment = null;
+      highlightedNodes = null;
+      document.querySelectorAll('.dept-row').forEach(row => row.classList.remove('active'));
+      const searchInput = document.getElementById('searchInput');
+      if (searchInput) searchInput.value = '';
+      const clearBtn = document.getElementById('clearHighlightBtn');
+      if (clearBtn) clearBtn.style.display = 'none';
+
       orgData = userData;
       licensedEmails = licenses;
-      
+
       // Set up color scales
       this.setupColorScales();
       
