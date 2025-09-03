@@ -13,6 +13,7 @@ const GraphAPI = (function() {
   let hierarchyData = null;
   let filterNoDepartment = true; // Default to filtering out users with no department
   let filterInterns = true; // Default to filtering out interns
+  let filterNoTitle = true; // Default to filtering out users with no title
   
   // API configuration
   const graphBaseUrl = 'https://graph.microsoft.com/v1.0';
@@ -39,6 +40,13 @@ const GraphAPI = (function() {
       if (filterInternsCheckbox) {
         filterInternsCheckbox.checked = filterInterns; // Set default state
         filterInternsCheckbox.addEventListener('change', this.handleFilterChange.bind(this));
+      }
+
+      // Set up title filter checkbox listener
+      const filterNoTitleCheckbox = document.getElementById('filterNoTitle');
+      if (filterNoTitleCheckbox) {
+        filterNoTitleCheckbox.checked = filterNoTitle; // Set default state
+        filterNoTitleCheckbox.addEventListener('change', this.handleFilterChange.bind(this));
       }
       
       // Load email history from localStorage
@@ -122,6 +130,8 @@ const GraphAPI = (function() {
         filterNoDepartment = event.target.checked;
       } else if (event.target.id === 'filterInterns') {
         filterInterns = event.target.checked;
+      } else if (event.target.id === 'filterNoTitle') {
+        filterNoTitle = event.target.checked;
       }
       
       // Reapply filter and update visualization if data exists
@@ -138,7 +148,12 @@ const GraphAPI = (function() {
         if (filterNoDepartment && (!user.department || user.department === 'Unknown' || user.department.trim() === '')) {
           return false;
         }
-        
+
+        // Apply title filter
+        if (filterNoTitle && (!user.title || user.title.trim() === '')) {
+          return false;
+        }
+
         // Apply intern filter (check if title contains "intern" - case insensitive)
         if (filterInterns && user.title && user.title.toLowerCase().includes('intern')) {
           return false;
@@ -378,7 +393,7 @@ const GraphAPI = (function() {
                           maxDepth === 4 ? '3-5 levels' :
                           'unlimited depth';
         let filterInfo = '';
-        if ((filterNoDepartment || filterInterns) && filteredOrgData.length < orgData.length) {
+        if ((filterNoDepartment || filterInterns || filterNoTitle) && filteredOrgData.length < orgData.length) {
           filterInfo = ` - ${filteredOrgData.length} shown after filtering`;
         }
         document.getElementById('fetchStatus').innerHTML = `
@@ -675,11 +690,12 @@ const GraphAPI = (function() {
       
       // Add filter status message if filtering
       let filterMessage = '';
-      if ((filterNoDepartment || filterInterns) && orgData.length > dataToUse.length) {
+      if ((filterNoDepartment || filterInterns || filterNoTitle) && orgData.length > dataToUse.length) {
         const filtered = orgData.length - dataToUse.length;
         const filterReasons = [];
         if (filterNoDepartment) filterReasons.push('no department');
         if (filterInterns) filterReasons.push('interns');
+        if (filterNoTitle) filterReasons.push('no title');
         
         filterMessage = `<div class="filter-status">
           <span style="color: var(--info);">ℹ️ Showing ${dataToUse.length} of ${orgData.length} users (${filtered} filtered: ${filterReasons.join(', ')})</span>
