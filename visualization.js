@@ -304,6 +304,9 @@ const OrgChart = (function() {
         d.x0 = d.x;
         d.y0 = d.y;
       });
+
+      // Refresh statistics to reflect current view
+      this.updateStatsPanel();
     },
     
     // Creates a curved (diagonal) path from parent to child nodes
@@ -773,8 +776,11 @@ const OrgChart = (function() {
       const stats = document.getElementById('statsPanel');
       const licensed = orgData.filter(u => u.hasLicense).length;
       const departments = [...new Set(orgData.map(u => u.department))].length;
-      const maxDepth = root ? d3.max(root.descendants(), d => d.depth) : 0;
-      
+      const visibleNodes = root ? root.descendants() : [];
+      const isolatedCount = highlightedNodes
+        ? visibleNodes.filter(d => highlightedNodes.has(d.data.email)).length
+        : 0;
+
       stats.innerHTML = `
         <div class="stat-item">
           <span class="stat-label">Total Users:</span>
@@ -789,8 +795,8 @@ const OrgChart = (function() {
           <span class="stat-value">${departments}</span>
         </div>
         <div class="stat-item">
-          <span class="stat-label">Max Depth:</span>
-          <span class="stat-value">${maxDepth}</span>
+          <span class="stat-label">Isolated Users:</span>
+          <span class="stat-value">${isolatedCount}</span>
         </div>
       `;
     }
