@@ -798,6 +798,10 @@ const OrgChart = (function() {
           <span class="stat-label">Isolated Users:</span>
           <span class="stat-value">${isolatedCount}</span>
         </div>
+        <div class="stat-item">
+          <span class="stat-label">Visible Users:</span>
+          <span class="stat-value">${visibleNodes.length}</span>
+        </div>
       `;
     }
   };
