@@ -20,7 +20,8 @@ const OrgChart = (function() {
     verticalSpacing: 1,
     nodeRadius: 10,
     duration: 750,
-    margin: { top: 20, right: 120, bottom: 20, left: 120 }
+    margin: { top: 20, right: 120, bottom: 20, left: 120 },
+    showEngagementStars: true
   };
   
   // Color scales
@@ -45,6 +46,15 @@ const OrgChart = (function() {
         verticalSlider.addEventListener('input', (e) => {
           config.verticalSpacing = parseFloat(e.target.value);
           document.getElementById('verticalValue').textContent = e.target.value;
+        });
+      }
+
+      const showStarsCheckbox = document.getElementById('showStars');
+      if (showStarsCheckbox) {
+        config.showEngagementStars = showStarsCheckbox.checked;
+        showStarsCheckbox.addEventListener('change', (e) => {
+          config.showEngagementStars = e.target.checked;
+          if (root) this.update(root);
         });
       }
     },
@@ -202,14 +212,7 @@ const OrgChart = (function() {
         .attr('dy', '.35em')
         .attr('x', d => d.children || d._children ? -13 : 13)
         .attr('text-anchor', d => d.children || d._children ? 'end' : 'start')
-        .text(d => {
-          const name = d.data.name || 'Unknown';
-          if (d.data.aiEngagement !== undefined && d.data.aiEngagement > 0) {
-            const rating = GraphAPI.getStarRating(d.data.aiEngagement);
-            return `${name} ${rating.stars}`;
-          }
-          return name;
-        })
+        .text(d => this.getNodeLabel(d))
         .style('fill-opacity', 1e-6);
       
       // Add title (job title) as second line
@@ -238,6 +241,7 @@ const OrgChart = (function() {
         .attr('cursor', 'pointer');
       
       nodeUpdate.select('text')
+        .text(d => this.getNodeLabel(d))
         .style('fill-opacity', d => this.getNodeOpacity(d));
       
       nodeUpdate.select('text.title')
@@ -362,14 +366,30 @@ const OrgChart = (function() {
     
     // Reset view to center
     resetView: function() {
-      if (!svg) return;
-      
+      if (!svg || !root) return;
+
+      const nodes = root.descendants();
+      let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+      nodes.forEach(d => {
+        minX = Math.min(minX, d.x);
+        maxX = Math.max(maxX, d.x);
+        minY = Math.min(minY, d.y);
+        maxY = Math.max(maxY, d.y);
+      });
+
       const container = document.getElementById('treeContainer');
+      const width = container.clientWidth - config.margin.left - config.margin.right;
       const height = container.clientHeight - config.margin.top - config.margin.bottom;
-      
+
+      const dx = maxX - minX;
+      const dy = maxY - minY;
+      const scale = Math.min(width / (dy || width), height / (dx || height));
+      const tx = -minY * scale + (width - dy * scale) / 2 + config.margin.left;
+      const ty = -minX * scale + (height - dx * scale) / 2 + config.margin.top;
+
       svg.transition()
         .duration(750)
-        .call(zoom.transform, d3.zoomIdentity.translate(config.margin.left, height / 2));
+        .call(zoom.transform, d3.zoomIdentity.translate(tx, ty).scale(scale));
     },
     
     // Update spacing
@@ -523,7 +543,17 @@ const OrgChart = (function() {
       return (highlightedNodes.has(d.source.data.email) ||
               highlightedNodes.has(d.target.data.email)) ? 0.6 : 0.1;
     },
-    
+
+    // Get node label with optional engagement stars
+    getNodeLabel: function(d) {
+      const name = d.data.name || 'Unknown';
+      if (config.showEngagementStars && d.data.aiEngagement !== undefined && d.data.aiEngagement > 0) {
+        const rating = GraphAPI.getStarRating(d.data.aiEngagement);
+        return `${name} ${rating.stars}`;
+      }
+      return name;
+    },
+
     // Get node color based on current color scheme
     getNodeColor: function(d) {
       const colorBy = document.getElementById('colorBy').value;
