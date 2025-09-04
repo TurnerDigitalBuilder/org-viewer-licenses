@@ -230,19 +230,25 @@ const OrgChart = (function() {
       
       // UPDATE
       const nodeUpdate = nodeEnter.merge(node);
-      
+
       // Transition to the proper position for the node
       nodeUpdate.transition()
         .duration(config.duration)
         .attr('transform', d => `translate(${d.y},${d.x})`);
+
+      // Disable interactions for dimmed nodes
+      nodeUpdate
+        .style('pointer-events', d =>
+          !highlightedNodes || highlightedNodes.has(d.data.email) ? 'all' : 'none')
+        .style('cursor', d =>
+          !highlightedNodes || highlightedNodes.has(d.data.email) ? 'pointer' : 'default');
       
       // Update the node attributes and style
       nodeUpdate.select('circle')
         .attr('r', config.nodeRadius)
         .style('fill', d => this.getNodeColor(d))
         .style('stroke', d => this.getNodeStroke(d))
-        .style('opacity', d => this.getNodeOpacity(d))
-        .attr('cursor', 'pointer');
+        .style('opacity', d => this.getNodeOpacity(d));
       
       nodeUpdate.select('text')
         .text(d => this.getNodeLabel(d))
@@ -652,9 +658,14 @@ const OrgChart = (function() {
     
     // Show tooltip
     showTooltip: function(event, d) {
+      // Don't show tooltip for dimmed nodes when highlighting is active
+      if (highlightedNodes && !highlightedNodes.has(d.data.email)) {
+        return;
+      }
+
       const tooltip = document.getElementById('tooltip');
-      const licenseText = d.data.hasLicense ? 
-        '<span style="color: #00a854; font-weight: bold;">✔ Has ChatGPT License</span>' : 
+      const licenseText = d.data.hasLicense ?
+        '<span style="color: #00a854; font-weight: bold;">✔ Has ChatGPT License</span>' :
         '<span style="color: #dc3545; font-weight: bold;">✗ No ChatGPT License</span>';
       
       // Calculate AI engagement display
