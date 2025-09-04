@@ -661,6 +661,12 @@ input[type="checkbox"] {
   height: 20px;
 }
 
+#licenseToggleBtn.active {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: white;
+}
+
 #clearHighlightBtn {
   background: rgba(231, 76, 60, 0.1);
   border-color: var(--danger);
