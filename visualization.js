@@ -391,7 +391,46 @@ const OrgChart = (function() {
         .duration(750)
         .call(zoom.transform, d3.zoomIdentity.translate(tx, ty).scale(scale));
     },
-    
+
+    // Download current graph data as CSV
+    downloadCSV: function() {
+      if (!orgData || orgData.length === 0) return;
+
+      // Determine which users to export
+      let dataToExport = orgData;
+      if (highlightedNodes && highlightedNodes.size > 0) {
+        dataToExport = orgData.filter(u => highlightedNodes.has(u.email));
+      }
+
+      const header = ['Name', 'Title', 'Department', 'Location', 'Email', 'License', 'AI Usage'];
+      const rows = dataToExport.map(u => {
+        const rating = u.aiEngagement !== undefined ? GraphAPI.getStarRating(u.aiEngagement) : null;
+        const daily = u.aiEngagement !== undefined ? Math.round(u.aiEngagement * 3) : '';
+        const aiUsage = rating ? `${rating.label} (~${daily}/day)` : '';
+        return [
+          u.name || '',
+          u.title || '',
+          u.department || '',
+          u.location || '',
+          u.email || '',
+          u.hasLicense ? 'Yes' : 'No',
+          aiUsage
+        ];
+      });
+
+      const csv = [header, ...rows]
+        .map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(','))
+        .join('\n');
+
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = 'org-data.csv';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    },
+
     // Update spacing
     updateSpacing: function(type, value) {
       if (type === 'horizontal') {
