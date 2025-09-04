@@ -176,10 +176,17 @@
                   Hide No Title
                 </label>
               </div>
-              
+
+              <div class="control-group-vertical">
+                <label for="showStars" style="display: flex; align-items: center; gap: 0.5rem;">
+                  <input type="checkbox" id="showStars" checked style="width: auto;">
+                  Show Engagement Stars
+                </label>
+              </div>
+
               <div class="control-group-vertical">
                 <label>Horizontal Spacing: <span id="horizontalValue">200</span></label>
-                <input type="range" id="horizontalSpacing" min="100" max="400" value="200" 
+                <input type="range" id="horizontalSpacing" min="100" max="400" value="200"
                        oninput="OrgChart.updateSpacing('horizontal', this.value)">
               </div>
               
