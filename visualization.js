@@ -13,6 +13,7 @@ const OrgChart = (function() {
   let licensedEmails = new Set();
   let highlightedDepartment = null;
   let highlightedNodes = null;
+  let licenseHighlightActive = false;
   
   // Configuration
   const config = {
@@ -69,11 +70,14 @@ const OrgChart = (function() {
       // Reset any existing search or department highlights
       highlightedDepartment = null;
       highlightedNodes = null;
+      licenseHighlightActive = false;
       document.querySelectorAll('.dept-row').forEach(row => row.classList.remove('active'));
       const searchInput = document.getElementById('searchInput');
       if (searchInput) searchInput.value = '';
       const clearBtn = document.getElementById('clearHighlightBtn');
       if (clearBtn) clearBtn.style.display = 'none';
+      const licenseBtn = document.getElementById('licenseToggleBtn');
+      if (licenseBtn) licenseBtn.classList.remove('active');
 
       orgData = userData;
       licensedEmails = licenses;
@@ -469,6 +473,9 @@ const OrgChart = (function() {
         if (input) input.value = '';
         const searchClearBtn = document.getElementById('clearSearchBtn');
         if (searchClearBtn) searchClearBtn.style.display = 'none';
+        licenseHighlightActive = false;
+        const licenseBtn = document.getElementById('licenseToggleBtn');
+        if (licenseBtn) licenseBtn.classList.remove('active');
 
         // Update active class on rows
         document.querySelectorAll('.dept-row').forEach(row => {
@@ -489,6 +496,28 @@ const OrgChart = (function() {
       // Update the visualization
       if (root) {
         this.update(root);
+      }
+    },
+
+    // Toggle highlight of licensed users
+    toggleLicenseHighlight: function() {
+      if (licenseHighlightActive) {
+        this.clearHighlight();
+      } else {
+        highlightedDepartment = null;
+        highlightedNodes = new Set(orgData.filter(u => u.hasLicense).map(u => u.email));
+        highlightedNodes = highlightedNodes.size > 0 ? highlightedNodes : null;
+        licenseHighlightActive = true;
+        document.querySelectorAll('.dept-row').forEach(row => row.classList.remove('active'));
+        const input = document.getElementById('searchInput');
+        if (input) input.value = '';
+        const clearBtn = document.getElementById('clearHighlightBtn');
+        if (clearBtn) clearBtn.style.display = 'flex';
+        const searchClearBtn = document.getElementById('clearSearchBtn');
+        if (searchClearBtn) searchClearBtn.style.display = 'none';
+        const licenseBtn = document.getElementById('licenseToggleBtn');
+        if (licenseBtn) licenseBtn.classList.add('active');
+        if (root) this.update(root);
       }
     },
 
@@ -516,6 +545,9 @@ const OrgChart = (function() {
       }).map(u => u.email));
 
       highlightedNodes = highlightedNodes.size > 0 ? highlightedNodes : null;
+      licenseHighlightActive = false;
+      const licenseBtn = document.getElementById('licenseToggleBtn');
+      if (licenseBtn) licenseBtn.classList.remove('active');
 
       // Remove active class from department rows
       document.querySelectorAll('.dept-row').forEach(row => row.classList.remove('active'));
@@ -539,6 +571,7 @@ const OrgChart = (function() {
     clearHighlight: function() {
       highlightedDepartment = null;
       highlightedNodes = null;
+      licenseHighlightActive = false;
 
       // Remove active class from all rows
       document.querySelectorAll('.dept-row').forEach(row => {
@@ -558,6 +591,8 @@ const OrgChart = (function() {
       if (clearSearchBtn) {
         clearSearchBtn.style.display = 'none';
       }
+      const licenseBtn = document.getElementById('licenseToggleBtn');
+      if (licenseBtn) licenseBtn.classList.remove('active');
 
       // Update the visualization
       if (root) {
