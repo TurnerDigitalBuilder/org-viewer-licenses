@@ -18,6 +18,7 @@ const GraphAPI = (function() {
   
   // API configuration
   const graphBaseUrl = 'https://graph.microsoft.com/v1.0';
+  const orgDomain = 'tcco.com';
   
   // Public API
   return {
@@ -341,7 +342,15 @@ const GraphAPI = (function() {
         this.showError('fetchStatus', 'Please enter a starting user email address');
         return;
       }
-      
+
+      // Force email to use company domain
+      const username = startingEmail.split('@')[0].toLowerCase();
+      startingEmail = `${username}@${orgDomain}`;
+      const emailInput = document.getElementById('startingEmail');
+      if (emailInput) {
+        emailInput.value = startingEmail;
+      }
+
       // Reset data
       orgData = [];
       hierarchyData = null;
