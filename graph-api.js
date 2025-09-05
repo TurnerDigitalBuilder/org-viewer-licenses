@@ -6,8 +6,9 @@ const GraphAPI = (function() {
   let accessToken = '';
   let startingEmail = '';
   let maxUsers = 100;
-  let licensedEmails = new Set();
-  let aiEngagementMap = new Map(); // Map of email to daily messages
+  let licensedEmails = new Set(); // Stores full email addresses from CSV
+  let licensedUsernames = new Set(); // Stores email usernames for matching
+  let aiEngagementMap = new Map(); // Map of email usernames to daily messages
   let orgData = [];
   let filteredOrgData = [];
   let hierarchyData = null;
@@ -261,6 +262,7 @@ const GraphAPI = (function() {
           
           // Clear previous data
           licensedEmails.clear();
+          licensedUsernames.clear();
           aiEngagementMap.clear();
           
           // Find column indices (case-insensitive)
@@ -277,16 +279,20 @@ const GraphAPI = (function() {
             const row = lines[i].split(',');
             if (row.length > emailIndex) {
               const email = row[emailIndex].trim().toLowerCase();
-              if (email && email.includes('@')) {
+              if (email) {
                 licensedEmails.add(email);
-                
-                // If engagement data exists, store it
-                if (engagementIndex !== -1 && row.length > engagementIndex) {
-                  const avgMessages = parseFloat(row[engagementIndex].trim());
-                  if (!isNaN(avgMessages)) {
-                    // Divide by 3 to get engagement score
-                    const engagementScore = avgMessages / 3;
-                    aiEngagementMap.set(email, engagementScore);
+                const username = email.split('@')[0];
+                if (username) {
+                  licensedUsernames.add(username);
+
+                  // If engagement data exists, store it keyed by username
+                  if (engagementIndex !== -1 && row.length > engagementIndex) {
+                    const avgMessages = parseFloat(row[engagementIndex].trim());
+                    if (!isNaN(avgMessages)) {
+                      // Divide by 3 to get engagement score
+                      const engagementScore = avgMessages / 3;
+                      aiEngagementMap.set(username, engagementScore);
+                    }
                   }
                 }
               }
@@ -462,25 +468,27 @@ const GraphAPI = (function() {
     
     // Process user data
     processUserData: function(userData) {
+      const email = (userData.mail || userData.userPrincipalName || '').toLowerCase();
+      const username = email.split('@')[0];
       const user = {
         id: userData.id,
         name: userData.displayName || 'Unknown',
-        email: (userData.mail || userData.userPrincipalName || '').toLowerCase(),
+        email: email,
         title: userData.jobTitle || '',
         department: userData.department || 'Unknown',
         location: userData.city || userData.officeLocation || '',
         hasLicense: false,
         aiEngagement: 0
       };
-      
-      // Check if user has license
-      if (user.email && licensedEmails.has(user.email)) {
+
+      // Check if user has license using username
+      if (username && licensedUsernames.has(username)) {
         user.hasLicense = true;
       }
-      
-      // Check if user has AI engagement data
-      if (user.email && aiEngagementMap.has(user.email)) {
-        user.aiEngagement = aiEngagementMap.get(user.email);
+
+      // Check if user has AI engagement data using username
+      if (username && aiEngagementMap.has(username)) {
+        user.aiEngagement = aiEngagementMap.get(username);
       }
       
       // Add to org data
