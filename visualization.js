@@ -674,24 +674,27 @@ const OrgChart = (function() {
       // Calculate AI engagement display
       let engagementText = '';
       if (d.data.aiEngagement !== undefined) {
-        const rating = GraphAPI.getStarRating(d.data.aiEngagement);
-        const dailyEngagements = Math.round(d.data.aiEngagement * 3);
-        engagementText = `
-          <div style="margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px solid #ddd;">
-            <strong>AI Engagement:</strong> ${rating.stars}<br>
-            <span style="color: var(--text-light); font-size: 0.85rem;">
-              ${rating.label} (~${dailyEngagements} engagements/day)
-            </span>
-          </div>
-        `;
-      }
-      
+          const rating = GraphAPI.getStarRating(d.data.aiEngagement);
+          const dailyEngagements = Math.round(d.data.aiEngagement * 3);
+          engagementText = `
+            <div style="margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px solid #ddd;">
+              <strong>AI Engagement:</strong> ${rating.stars}<br>
+              <span style="color: var(--text-light); font-size: 0.85rem;">
+                ${rating.label} (~${dailyEngagements} engagements/day)
+              </span>
+            </div>
+          `;
+        }
+
+      const directReports = (d.children || d._children || []).length;
+
       tooltip.innerHTML = `
         <strong>${d.data.name || 'Unknown'}</strong><br>
         ${d.data.title ? d.data.title + '<br>' : ''}
         ${d.data.department || 'No department'}<br>
         ${d.data.location ? d.data.location + '<br>' : ''}
         ${d.data.email ? d.data.email + '<br>' : ''}
+        Direct Reports: ${directReports}<br>
         <div style="margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px solid #ddd;">
           ${licenseText}
         </div>
