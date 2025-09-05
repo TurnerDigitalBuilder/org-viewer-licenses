@@ -686,7 +686,13 @@ const OrgChart = (function() {
           `;
         }
 
-      const directReports = (d.children || d._children || []).length;
+      // Calculate total reports including all nested levels
+      function countDescendants(node) {
+        const children = [...(node.children || []), ...(node._children || [])];
+        return children.reduce((sum, child) => sum + 1 + countDescendants(child), 0);
+      }
+
+      const totalReports = countDescendants(d);
 
       tooltip.innerHTML = `
         <strong>${d.data.name || 'Unknown'}</strong><br>
@@ -694,7 +700,7 @@ const OrgChart = (function() {
         ${d.data.department || 'No department'}<br>
         ${d.data.location ? d.data.location + '<br>' : ''}
         ${d.data.email ? d.data.email + '<br>' : ''}
-        Direct Reports: ${directReports}<br>
+        Total Reports: ${totalReports}<br>
         <div style="margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px solid #ddd;">
           ${licenseText}
         </div>
