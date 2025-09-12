@@ -112,6 +112,15 @@ const OrgChart = (function() {
         });
       
       svg.call(zoom);
+
+      // Hide selected user panel when clicking on empty space
+      svg.on('click', () => {
+        const section = document.getElementById('selectedUserSection');
+        if (section) {
+          section.style.display = 'none';
+          section.innerHTML = '';
+        }
+      });
       
       // Create tree layout
       treemap = d3.tree().size([height, width]);
@@ -207,7 +216,11 @@ const OrgChart = (function() {
       const nodeEnter = node.enter().append('g')
         .attr('class', 'node')
         .attr('transform', d => `translate(${source.y0 || 0},${source.x0 || 0})`)
-        .on('click', (event, d) => this.click(event, d))
+        .on('click', (event, d) => {
+          // Prevent background click handler from firing when selecting a node
+          event.stopPropagation();
+          this.click(event, d);
+        })
         .on('mouseover', (event, d) => this.showTooltip(event, d))
         .on('mouseout', () => this.hideTooltip());
       
