@@ -14,6 +14,7 @@ const OrgChart = (function() {
   let highlightedDepartment = null;
   let highlightedNodes = null;
   let licenseHighlightActive = false;
+  let currentExpandLevel = 1;
   
   // Configuration
   const config = {
@@ -130,7 +131,8 @@ const OrgChart = (function() {
       if (root.children) {
         root.children.forEach(this.collapse);
       }
-      
+      currentExpandLevel = 1;
+
       // Initial render
       this.update(root);
       
@@ -348,11 +350,37 @@ const OrgChart = (function() {
         d.children = null;
       }
     },
-    
+
+    // Expand next tier of nodes
+    expandOneLevel: function() {
+      if (!root) return;
+
+      let expanded = false;
+
+      function traverse(node, depth) {
+        if (depth <= currentExpandLevel && node._children) {
+          node.children = node._children;
+          node._children = null;
+          expanded = true;
+        }
+
+        const children = node.children ? node.children.slice() : [];
+        const hidden = node._children ? node._children.slice() : [];
+        [...children, ...hidden].forEach(child => traverse(child, depth + 1));
+      }
+
+      traverse(root, 0);
+
+      if (expanded) {
+        currentExpandLevel++;
+        this.update(root);
+      }
+    },
+
     // Expand all nodes
     expandAll: function() {
       if (!root) return;
-      
+
       function expand(d) {
         if (d._children) {
           d.children = d._children;
@@ -362,18 +390,20 @@ const OrgChart = (function() {
           d.children.forEach(expand);
         }
       }
-      
+
       expand(root);
+      currentExpandLevel = root.height + 1;
       this.update(root);
     },
-    
+
     // Collapse all nodes
     collapseAll: function() {
       if (!root) return;
-      
+
       if (root.children) {
         root.children.forEach(this.collapse);
       }
+      currentExpandLevel = 1;
       this.update(root);
     },
     
