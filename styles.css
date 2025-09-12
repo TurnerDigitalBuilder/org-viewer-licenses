@@ -787,6 +787,38 @@ input[type="checkbox"] {
   border: 1px solid var(--border);
 }
 
+#selectedUserSection {
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.85rem;
+}
+
+#selectedUserSection h4 {
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+  color: var(--primary);
+}
+
+.selected-user-email {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.copy-btn {
+  padding: 0.2rem 0.4rem;
+  font-size: 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-secondary);
+  cursor: pointer;
+}
+
+.copy-btn:hover {
+  background: var(--border);
+}
+
 /* Stats Panel */
 .stats-panel {
   position: absolute;
