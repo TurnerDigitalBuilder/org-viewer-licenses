@@ -135,12 +135,17 @@ const OrgChart = (function() {
 
       // Initial render
       this.update(root);
-      
+
       // Show controls and panels
       document.getElementById('legend').style.display = 'block';
+      const selectedSection = document.getElementById('selectedUserSection');
+      if (selectedSection) {
+        selectedSection.style.display = 'none';
+        selectedSection.innerHTML = '';
+      }
       document.getElementById('statsPanel').style.display = 'block';
       document.getElementById('bottomControls').style.display = 'flex';
-      
+
       this.updateLegend();
       this.updateStatsPanel();
     },
@@ -340,6 +345,7 @@ const OrgChart = (function() {
         d._children = null;
       }
       this.update(d);
+      this.updateSelectedUser(d);
     },
     
     // Collapse node
@@ -746,12 +752,48 @@ const OrgChart = (function() {
     hideTooltip: function() {
       document.getElementById('tooltip').classList.remove('visible');
     },
+
+    // Update selected user panel
+    updateSelectedUser: function(d) {
+      const section = document.getElementById('selectedUserSection');
+      if (!section) return;
+
+      function countDescendants(node) {
+        const children = [...(node.children || []), ...(node._children || [])];
+        return children.reduce((sum, child) => sum + 1 + countDescendants(child), 0);
+      }
+
+      const totalReports = countDescendants(d);
+      const emailHtml = d.data.email ? `
+        <div class="selected-user-email">
+          <span>${d.data.email}</span>
+          <button class="copy-btn">Copy</button>
+        </div>` : '';
+
+      section.innerHTML = `
+        <h4>Selected User</h4>
+        <div><strong>${d.data.name || 'Unknown'}</strong></div>
+        ${d.data.title ? `<div>${d.data.title}</div>` : ''}
+        <div>${d.data.department || 'No department'}</div>
+        ${d.data.location ? `<div>${d.data.location}</div>` : ''}
+        ${emailHtml}
+        <div>Total Reports: ${totalReports}</div>
+      `;
+      section.style.display = 'block';
+
+      if (d.data.email) {
+        const btn = section.querySelector('.copy-btn');
+        if (btn) {
+          btn.addEventListener('click', () => navigator.clipboard.writeText(d.data.email));
+        }
+      }
+    },
     
     // Update legend based on color scheme
     updateLegend: function() {
-      const legend = document.getElementById('legend');
+      const legendContent = document.getElementById('legendContent');
       const colorBy = document.getElementById('colorBy').value;
-      
+
       let html = '<h4>Legend</h4>';
       
       // Always show license border legend
@@ -807,7 +849,7 @@ const OrgChart = (function() {
         }
       }
       
-      legend.innerHTML = html;
+      legendContent.innerHTML = html;
     },
     
     // Update statistics panel
