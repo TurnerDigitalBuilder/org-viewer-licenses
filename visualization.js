@@ -915,8 +915,13 @@ const OrgChart = (function() {
       const visibleLicensedPercent = visibleNodes.length > 0
         ? Math.round((visibleLicensed / visibleNodes.length) * 100)
         : 0;
-      const isolatedCount = highlightedNodes
-        ? visibleNodes.filter(d => highlightedNodes.has(d.data.email)).length
+      const highlightedVisibleNodes = highlightedNodes
+        ? visibleNodes.filter(d => highlightedNodes.has(d.data.email))
+        : [];
+      const isolatedCount = highlightedVisibleNodes.length;
+      const isolatedLicensed = highlightedVisibleNodes.filter(d => d.data.hasLicense).length;
+      const isolatedLicensedPercent = isolatedCount > 0
+        ? Math.round((isolatedLicensed / isolatedCount) * 100)
         : 0;
 
       stats.innerHTML = `
@@ -935,6 +940,10 @@ const OrgChart = (function() {
         <div class="stat-item">
           <span class="stat-label">Isolated Users:</span>
           <span class="stat-value">${isolatedCount}</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Isolated Licensed Users:</span>
+          <span class="stat-value">${isolatedLicensed} (${isolatedLicensedPercent}%)</span>
         </div>
         <div class="stat-item">
           <span class="stat-label">Visible Users:</span>
