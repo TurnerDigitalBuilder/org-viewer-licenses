@@ -396,6 +396,42 @@ const OrgChart = (function() {
       }
     },
 
+    // Collapse the deepest expanded tier
+    collapseOneLevel: function() {
+      if (!root) return;
+
+      const nodes = root.descendants();
+      let deepestWithChildren = -1;
+
+      nodes.forEach((node) => {
+        if (node.children && node.children.length > 0) {
+          deepestWithChildren = Math.max(deepestWithChildren, node.depth);
+        }
+      });
+
+      if (deepestWithChildren < 0) return;
+
+      let collapsed = false;
+      nodes.forEach((node) => {
+        if (node.depth === deepestWithChildren && node.children && node.children.length > 0) {
+          this.collapse(node);
+          collapsed = true;
+        }
+      });
+
+      if (!collapsed) return;
+
+      let newDeepest = -1;
+      root.descendants().forEach((node) => {
+        if (node.children && node.children.length > 0) {
+          newDeepest = Math.max(newDeepest, node.depth);
+        }
+      });
+
+      currentExpandLevel = Math.max(0, newDeepest + 1);
+      this.update(root);
+    },
+
     // Expand all nodes
     expandAll: function() {
       if (!root) return;
