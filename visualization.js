@@ -868,9 +868,17 @@ const OrgChart = (function() {
     // Update statistics panel
     updateStatsPanel: function() {
       const stats = document.getElementById('statsPanel');
+      const totalUsers = orgData.length;
       const licensed = orgData.filter(u => u.hasLicense).length;
+      const licensedPercent = totalUsers > 0
+        ? Math.round((licensed / totalUsers) * 100)
+        : 0;
       const departments = [...new Set(orgData.map(u => u.department))].length;
       const visibleNodes = root ? root.descendants() : [];
+      const visibleLicensed = visibleNodes.filter(d => d.data.hasLicense).length;
+      const visibleLicensedPercent = visibleNodes.length > 0
+        ? Math.round((visibleLicensed / visibleNodes.length) * 100)
+        : 0;
       const isolatedCount = highlightedNodes
         ? visibleNodes.filter(d => highlightedNodes.has(d.data.email)).length
         : 0;
@@ -878,11 +886,11 @@ const OrgChart = (function() {
       stats.innerHTML = `
         <div class="stat-item">
           <span class="stat-label">Total Users:</span>
-          <span class="stat-value">${orgData.length}</span>
+          <span class="stat-value">${totalUsers}</span>
         </div>
         <div class="stat-item">
           <span class="stat-label">Licensed:</span>
-          <span class="stat-value">${licensed} (${Math.round(licensed/orgData.length*100)}%)</span>
+          <span class="stat-value">${licensed} (${licensedPercent}%)</span>
         </div>
         <div class="stat-item">
           <span class="stat-label">Departments:</span>
@@ -895,6 +903,10 @@ const OrgChart = (function() {
         <div class="stat-item">
           <span class="stat-label">Visible Users:</span>
           <span class="stat-value">${visibleNodes.length}</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Visible Licensed Users:</span>
+          <span class="stat-value">${visibleLicensed} (${visibleLicensedPercent}%)</span>
         </div>
       `;
     }
