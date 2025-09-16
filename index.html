@@ -185,6 +185,18 @@
               </div>
 
               <div class="control-group-vertical">
+                <label for="dimMode">Non-highlighted Display:</label>
+                <select id="dimMode">
+                  <option value="dim" selected>Dim</option>
+                  <option value="transparent">Transparent</option>
+                  <option value="hidden">Hidden</option>
+                </select>
+                <small style="color: var(--text-light); display: block; margin-top: 0.25rem;">
+                  Choose how nodes and links that are not part of the current highlight are shown.
+                </small>
+              </div>
+
+              <div class="control-group-vertical">
                 <label>Horizontal Spacing: <span id="horizontalValue">200</span></label>
                 <input type="range" id="horizontalSpacing" min="100" max="400" value="200"
                        oninput="OrgChart.updateSpacing('horizontal', this.value)">
