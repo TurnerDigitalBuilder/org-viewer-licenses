@@ -23,7 +23,8 @@ const OrgChart = (function() {
     nodeRadius: 10,
     duration: 750,
     margin: { top: 20, right: 120, bottom: 20, left: 120 },
-    showEngagementStars: true
+    showEngagementStars: true,
+    dimMode: 'dim'
   };
   
   // Color scales
@@ -56,6 +57,15 @@ const OrgChart = (function() {
         config.showEngagementStars = showStarsCheckbox.checked;
         showStarsCheckbox.addEventListener('change', (e) => {
           config.showEngagementStars = e.target.checked;
+          if (root) this.update(root);
+        });
+      }
+
+      const dimModeSelect = document.getElementById('dimMode');
+      if (dimModeSelect) {
+        config.dimMode = dimModeSelect.value;
+        dimModeSelect.addEventListener('change', (e) => {
+          config.dimMode = e.target.value;
           if (root) this.update(root);
         });
       }
@@ -216,6 +226,7 @@ const OrgChart = (function() {
       const nodeEnter = node.enter().append('g')
         .attr('class', 'node')
         .attr('transform', d => `translate(${source.y0 || 0},${source.x0 || 0})`)
+        .style('display', d => this.getNodeDisplay(d))
         .on('click', (event, d) => {
           // Prevent background click handler from firing when selecting a node
           event.stopPropagation();
@@ -258,6 +269,7 @@ const OrgChart = (function() {
 
       // Disable interactions for dimmed nodes
       nodeUpdate
+        .style('display', d => this.getNodeDisplay(d))
         .style('pointer-events', d =>
           !highlightedNodes || highlightedNodes.has(d.data.email) ? 'all' : 'none')
         .style('cursor', d =>
@@ -296,16 +308,20 @@ const OrgChart = (function() {
       // Enter new links at the parent's previous position
       const linkEnter = link.enter().insert('path', 'g')
         .attr('class', 'link')
+        .style('display', d => this.getLinkDisplay(d))
+        .style('opacity', d => this.getLinkOpacity(d))
         .attr('d', d => {
           const o = { x: source.x0 || 0, y: source.y0 || 0 };
           return this.diagonal(o, o);
         });
-      
+
       // UPDATE
       const linkUpdate = linkEnter.merge(link);
-      
+
       // Transition back to the parent element position
-      linkUpdate.transition()
+      linkUpdate
+        .style('display', d => this.getLinkDisplay(d))
+        .transition()
         .duration(config.duration)
         .attr('d', d => this.diagonal(d.source, d.target))
         .style('opacity', d => this.getLinkOpacity(d));
@@ -699,7 +715,18 @@ const OrgChart = (function() {
       if (!highlightedNodes) {
         return 1;
       }
-      return highlightedNodes.has(d.data.email) ? 1 : 0.2;
+      if (highlightedNodes.has(d.data.email)) {
+        return 1;
+      }
+
+      switch (config.dimMode) {
+        case 'transparent':
+        case 'hidden':
+          return 0;
+        case 'dim':
+        default:
+          return 0.2;
+      }
     },
 
     // Get link opacity based on highlight
@@ -708,8 +735,42 @@ const OrgChart = (function() {
         return 1;
       }
       // Show link if either source or target is in highlighted set
-      return (highlightedNodes.has(d.source.data.email) ||
-              highlightedNodes.has(d.target.data.email)) ? 0.6 : 0.1;
+      const isHighlighted = (highlightedNodes.has(d.source.data.email) ||
+              highlightedNodes.has(d.target.data.email));
+
+      if (isHighlighted) {
+        return 0.6;
+      }
+
+      switch (config.dimMode) {
+        case 'transparent':
+        case 'hidden':
+          return 0;
+        case 'dim':
+        default:
+          return 0.1;
+      }
+    },
+
+    // Get node display based on highlight and dim mode
+    getNodeDisplay: function(d) {
+      if (!highlightedNodes || config.dimMode !== 'hidden') {
+        return null;
+      }
+
+      return highlightedNodes.has(d.data.email) ? null : 'none';
+    },
+
+    // Get link display based on highlight and dim mode
+    getLinkDisplay: function(d) {
+      if (!highlightedNodes || config.dimMode !== 'hidden') {
+        return null;
+      }
+
+      const isHighlighted = highlightedNodes.has(d.source.data.email) ||
+        highlightedNodes.has(d.target.data.email);
+
+      return isHighlighted ? null : 'none';
     },
 
     // Get node label with optional engagement stars
