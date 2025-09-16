@@ -15,7 +15,7 @@ const OrgChart = (function() {
   let highlightedNodes = null;
   let licenseHighlightActive = false;
   let currentExpandLevel = 1;
-  
+
   // Configuration
   const config = {
     horizontalSpacing: 200,
@@ -30,6 +30,27 @@ const OrgChart = (function() {
   // Color scales
   let departmentColorScale = null;
   let levelColorScale = null;
+
+  // Helper functions
+  function getAllChildren(node) {
+    return [
+      ...(node.children || []),
+      ...(node._children || [])
+    ];
+  }
+
+  function countDescendants(node) {
+    return getAllChildren(node)
+      .reduce((sum, child) => sum + 1 + countDescendants(child), 0);
+  }
+
+  function countLicensedDescendants(node) {
+    return getAllChildren(node)
+      .reduce((sum, child) => {
+        const isLicensed = child.data && child.data.hasLicense ? 1 : 0;
+        return sum + isLicensed + countLicensedDescendants(child);
+      }, 0);
+  }
   
   // Public API
   return {
@@ -832,13 +853,11 @@ const OrgChart = (function() {
           `;
         }
 
-      // Calculate total reports including all nested levels
-      function countDescendants(node) {
-        const children = [...(node.children || []), ...(node._children || [])];
-        return children.reduce((sum, child) => sum + 1 + countDescendants(child), 0);
-      }
-
       const totalReports = countDescendants(d);
+      const licensedReports = countLicensedDescendants(d);
+      const licensePercent = totalReports > 0
+        ? Number(((licensedReports / totalReports) * 100).toFixed(1))
+        : 0;
 
       tooltip.innerHTML = `
         <strong>${d.data.name || 'Unknown'}</strong><br>
@@ -847,6 +866,7 @@ const OrgChart = (function() {
         ${d.data.location ? d.data.location + '<br>' : ''}
         ${d.data.email ? d.data.email + '<br>' : ''}
         Total Reports: ${totalReports}<br>
+        Licensed Users: ${licensedReports} (${licensePercent}%)<br>
         <div style="margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px solid #ddd;">
           ${licenseText}
         </div>
@@ -868,12 +888,11 @@ const OrgChart = (function() {
       const section = document.getElementById('selectedUserSection');
       if (!section) return;
 
-      function countDescendants(node) {
-        const children = [...(node.children || []), ...(node._children || [])];
-        return children.reduce((sum, child) => sum + 1 + countDescendants(child), 0);
-      }
-
       const totalReports = countDescendants(d);
+      const licensedReports = countLicensedDescendants(d);
+      const licensePercent = totalReports > 0
+        ? Number(((licensedReports / totalReports) * 100).toFixed(1))
+        : 0;
       const emailHtml = d.data.email ? `
         <div class="selected-user-email">
           <span>${d.data.email}</span>
@@ -888,6 +907,7 @@ const OrgChart = (function() {
         ${d.data.location ? `<div>${d.data.location}</div>` : ''}
         ${emailHtml}
         <div>Total Reports: ${totalReports}</div>
+        <div>Licensed Users: ${licensedReports} (${licensePercent}%)</div>
       `;
       section.style.display = 'block';
 
